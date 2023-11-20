@@ -1,97 +1,96 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import axios from "axios";
 
-// const baseUrl ='http://localhost/00_GS/01_assignment/08_book/react_todo/'
+// const baseUrl = "http://localhost/00_GS/01_assignment/08_book/react_todo/";
 const baseUrl ='https://kkgsacademy.sakura.ne.jp/gs08_book/'
 
 function App() {
     const [todo, setTodo] = useState("");
     const [todos, setTodos] = useState([]);
+    // const [count, setCount] = useState(0);
 
     const formData = new FormData();
-    formData.append('todo', todo);
+    formData.append("todo", todo);
+
+    const params = new URLSearchParams();
+    params.append("todo", todo);
 
     useEffect(() => {
-        fetchTodos()
-    },[todos])
+        fetchTodos();
+    }, []);
 
-    const fetchTodos = async() => {
-        const todos = await fetch(baseUrl+'getTodos.php')
+    const fetchTodos = async () => {
+        const todos = await fetch(baseUrl + "getTodos.php");
         const string = await todos.text();
         const json = string === "" ? {} : JSON.parse(string);
         setTodos(json.data);
-        // const response = await todos.json();
-        // setTodos(response.data);
-    }
+    };
 
-    const addTodo = async() => {
-        const todos = await fetch(baseUrl+'addTodo.php',{
-            method:'POST',
-            body:formData
-        })
-        const string = await todos.text();
-        const json = string === "" ? {} : JSON.parse(string);
-        // const response = await todos.json()
-        // if (response.success) {
-        if (json.success) {
-                fetchTodos()
-        }
-    }
+    const addTodo = async () => {
+        axios.post(baseUrl + "addTodo.php", params).then(() => {
+            fetchTodos();
+        });
+        // const todos = await fetch(baseUrl+'addTodo.php',{
+        //     method:'POST',
+        //     body:formData
+        // })
+        // const string = await todos.text();
+        // const json = string === "" ? {} : JSON.parse(string);
 
-    const handleSubmit = async(e) => {
+        // if (json.success) {
+        //         fetchTodos()
+        // }
+    };
+
+    const deleteTodo = async (id) => {
+        params.append("id", id);
+        axios.post(baseUrl + "deleteTodo.php", params).then(() => {
+            fetchTodos();
+        });
+
+        // formData.append("id", id);
+        // const resp = await fetch(baseUrl + "deleteTodo.php", {
+        //     method: "POST",
+        //     body: formData,
+        // });
+
+        // const string = await resp.text();
+        // const json = string === "" ? {} : JSON.parse(string);
+
+        // if (json.success) {
+        //     fetchTodos();
+        // }
+        // setCount(count + 1);
+    };
+
+    const editTodo = async (id, todo) => {
+        params.append("id", id);
+        params.append("todo", todo);
+        axios.post(baseUrl + "editTodo.php", params).then(() => {
+            fetchTodos();
+        });
+
+        // formData.append("id", id);
+        // formData.append("todo", todo);
+
+        // const resp = await fetch(baseUrl + "editTodo.php", {
+        //     method: "POST",
+        //     body: formData,
+        // });
+
+        // const string = await resp.text();
+        // const json = string === "" ? {} : JSON.parse(string);
+        // if (json.success) {
+        //     fetchTodos();
+        // }
+        // setCount(count + 1);
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
         addTodo();
-
-        // const newTodos = todos;
-        // // newTodos.push(todo);
-        // newTodos.splice(0,0, todo);
-        // setTodos([...newTodos]);
-
         setTodo("");
-    };
-
-    const deleteTodo = async(id) => {
-        // console.log('ID', id);
-        const formData = new FormData();
-
-        formData.append('id', id);
-
-        const resp = await fetch(baseUrl + 'deleteTodo.php', {
-            method: 'POST',
-            body: formData
-        })
-
-        const string = await resp.text();
-        const json = string === "" ? {} : JSON.parse(string);
-        // const response = await todos.json()
-        // if (response.success) {
-        if (json.success) {
-            fetchTodos()
-        }
-
-    };
-
-    const editTodo = async(id, todo) => {
-        // console.log('ID', id);
-        const formData = new FormData();
-
-        formData.append('id', id);
-        formData.append('todo', todo);
-
-        const resp = await fetch(baseUrl + 'editTodo.php', {
-            method: 'POST',
-            body: formData
-        })
-
-        const string = await resp.text();
-        const json = string === "" ? {} : JSON.parse(string);
-        // const response = await todos.json()
-        // if (response.success) {
-        if (json.success) {
-            fetchTodos()
-        }
-
     };
 
     return (
@@ -105,17 +104,16 @@ function App() {
                         }}
                         className="bg-gray-200"
                     />
-                    <button type="submit" className="ml-2 bg-red-600 hover:bg-red-500 text-white rounded px-4 py-2">
+                    <button
+                        type="submit"
+                        className="ml-2 bg-red-600 hover:bg-red-500 text-white rounded px-4 py-2"
+                    >
                         Add
                     </button>
                 </div>
             </form>
             <div>
                 {todos.map((item, index) => {
-                    // console.log(item);
-                    // return (
-                    //     <p>{index}</p>
-                    // );
                     return (
                         <Todo
                             key={item.id}
@@ -162,7 +160,10 @@ const Todo = ({ item, deleteTodo, index, editTodo }) => {
                                         setTodo(e.target.value);
                                     }}
                                 />
-                                <button type="submit" className="bg-green-500 hover:bg-green-400 text-white rounded px-4 py-2">
+                                <button
+                                    type="submit"
+                                    className="bg-green-500 hover:bg-green-400 text-white rounded px-4 py-2"
+                                >
                                     Edit
                                 </button>
                             </div>
